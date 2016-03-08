@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cn.sunline.cipher.Security" version="1.0.0">
+	<name>Security</name>
+	<author>tomkrus</author>
+	<description>Get functionality from AES algorithm on Java and Objective-C</description>
+	<keywords>Cryptography</keywords>
+	<license>Apache 2.0 License</license>
+	<engines>
+		<engine name="cordova" version="4.0.2" />
+	</engines>
+	<js-module src="Security.js" name="Security">
+		<clobbers target="Security" />
+	</js-module>
+	<platform name="android">
+		<!-- android-specific elements -->
+		<source-file src="src/android/Security.java" target-dir="src/cn/sunline/cipher" />
+		<config-file target="res/xml/config.xml" parent="/*">
+			<feature name="Security" >
+				<param name="android-package" value="cn.sunline.cipher.Security"/>
+			</feature>
+		</config-file>
+		<config-file target="AndroidManifest.xml" parent="/*">
+			<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+			<uses-permission android:name="android.permission.BROADCAST_SMS" />
+			<uses-permission android:name="android.permission.RECEIVE_SMS" />
+			<uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
+			<uses-permission android:name="android.permission.RECEIVE_MMS" />
+			<uses-permission android:name="android.permission.READ_SMS" />
+			<uses-permission android:name="android.permission.WRITE_SMS" />
+			<uses-permission android:name="android.permission.SEND_SMS" />
+		</config-file>
+	</platform>
+	<platform name="ios">
+		<!-- ios-specific elements -->
+		<config-file target="config.xml" parent="/*">
+            <feature name="Device">
+                <param name="ios-package" value="Security"/>
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/Security.h" />
+        <source-file src="src/ios/Security.m" />
+
+	</platform>
+</plugin>
