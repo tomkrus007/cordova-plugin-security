@@ -1,1 +1,2 @@
-# cordova-plugin-security
+cordova plugin add cordova-plugin-security
+

@@ -21,81 +21,84 @@
 #import <Cordova/CDV.h>
 #import <CommonCrypto/CommonCryptor.h>
 #import <Security/Security.h>
+#import "GTMBase64.h"
 
 @implementation Security
 
 - (void)aesEncrypt:(CDVInvokedUrlCommand*)command
 {
-	CDVPluginResult* pluginResult = nil;
-    NSString *text = (NSString *)[command argumentAtIndex:0];
-    if(text == nil){
-    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Arg was null"];
-    } else {
-	    NSString *key = (NSString *)[command argumentAtIndex:1];
-	    NSData *aData = [text dataUsingEncoding: NSUTF8StringEncoding];
+	[self.commandDelegate runInBackground:^{
+		CDVPluginResult* pluginResult = nil;
+	    NSString *text = (NSString *)[command argumentAtIndex:0];
+	    if(text == nil){
+	    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Arg was null"];
+	    } else {
+		    NSString *key = (NSString *)[command argumentAtIndex:1];
+		    NSData *aData = [text dataUsingEncoding: NSUTF8StringEncoding];
 
-	    char keyPtr[kCCKeySizeAES256+1];
-	    bzero(keyPtr, sizeof(keyPtr));
-	    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
-	    NSUInteger dataLength = [aData length];
-	    size_t bufferSize = dataLength + kCCBlockSizeAES128;
-	    void *buffer = malloc(bufferSize);
-	    size_t numBytesEncrypted = 0;
-	    CCCryptorStatus cryptStatus = CCCrypt(kCCEncrypt, kCCAlgorithmAES128,
-	                                          kCCOptionPKCS7Padding | kCCOptionECBMode,
-	                                          keyPtr, kCCBlockSizeAES128,
-	                                          NULL,
-	                                          [aData bytes], dataLength,
-	                                          buffer, bufferSize,
-	                                          &numBytesEncrypted);
-	    if (cryptStatus == kCCSuccess) {
-	        NSData *data = [NSData dataWithBytesNoCopy:buffer length:numBytesEncrypted];
-	        NSString *aString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-	    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:aString];
-	    }else{
-	    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"加密失败"];
+		    char keyPtr[kCCKeySizeAES256+1];
+		    bzero(keyPtr, sizeof(keyPtr));
+		    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
+		    NSUInteger dataLength = [aData length];
+		    size_t bufferSize = dataLength + kCCBlockSizeAES128;
+		    void *buffer = malloc(bufferSize);
+		    size_t numBytesEncrypted = 0;
+		    CCCryptorStatus cryptStatus = CCCrypt(kCCEncrypt, kCCAlgorithmAES128,
+		                                          kCCOptionPKCS7Padding | kCCOptionECBMode,
+		                                          keyPtr, kCCBlockSizeAES128,
+		                                          NULL,
+		                                          [aData bytes], dataLength,
+		                                          buffer, bufferSize,
+		                                          &numBytesEncrypted);
+		    if (cryptStatus == kCCSuccess) {
+		        NSData *data = [NSData dataWithBytesNoCopy:buffer length:numBytesEncrypted];
+		        NSString *aString = [GTMBase64 stringByEncodingData:data];
+		    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:aString];
+		    }else{
+		    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"加密失败"];
+                free(buffer);
+		    }
 	    }
-	    free(buffer);
-    }
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+	    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 
 - (void)aesDecrypt:(CDVInvokedUrlCommand*)command
 {
-    NSString *text = (NSString *)[command argumentAtIndex:0];
-    if(text == nil){
-    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Arg was null"];
-    } else {
-    	NSString *key = (NSString *)[command argumentAtIndex:1];
-		NSData *aData = [text dataUsingEncoding: NSUTF8StringEncoding];
+	[self.commandDelegate runInBackground:^{
+		CDVPluginResult* pluginResult = nil;
+	    NSString *text = (NSString *)[command argumentAtIndex:0];
+	    if(text == nil){
+	    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Arg was null"];
+	    } else {
+	    	NSString *key = (NSString *)[command argumentAtIndex:1];
+			NSData *aData = [GTMBase64 decodeString:text];
 
-	    char keyPtr[kCCKeySizeAES256+1];
-	    bzero(keyPtr, sizeof(keyPtr));
-	    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
-	    NSUInteger dataLength = [aData length];
-	    size_t bufferSize = dataLength + kCCBlockSizeAES128;
-	    void *buffer = malloc(bufferSize);
-	    size_t numBytesDecrypted = 0;
-	    CCCryptorStatus cryptStatus = CCCrypt(kCCDecrypt, kCCAlgorithmAES128,
-	                                          kCCOptionPKCS7Padding | kCCOptionECBMode,
-	                                          keyPtr, kCCBlockSizeAES128,
-	                                          NULL,
-	                                          [aData bytes], dataLength,
-	                                          buffer, bufferSize,
-	                                          &numBytesDecrypted);
-	    if (cryptStatus == kCCSuccess) {
-	        NSData *data = [NSData dataWithBytesNoCopy:buffer length:numBytesDecrypted];
-	        NSString *aString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-	     	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:aString];
-	    }else{
-	    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"解密失败"];
+		    char keyPtr[kCCKeySizeAES256+1];
+		    bzero(keyPtr, sizeof(keyPtr));
+		    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
+		    NSUInteger dataLength = [aData length];
+		    size_t bufferSize = dataLength + kCCBlockSizeAES128;
+		    void *buffer = malloc(bufferSize);
+		    size_t numBytesDecrypted = 0;
+		    CCCryptorStatus cryptStatus = CCCrypt(kCCDecrypt, kCCAlgorithmAES128,
+		                                          kCCOptionPKCS7Padding | kCCOptionECBMode,
+		                                          keyPtr, kCCBlockSizeAES128,
+		                                          NULL,
+		                                          [aData bytes], dataLength,
+		                                          buffer, bufferSize,
+		                                          &numBytesDecrypted);
+		    if (cryptStatus == kCCSuccess) {
+		        NSData *data = [NSData dataWithBytesNoCopy:buffer length:numBytesDecrypted];
+		        NSString *aString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+		     	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:aString];
+		    }else{
+		    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"解密失败"];
+                free(buffer);
+		    }   
 	    }
-	    free(buffer);
-    }
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}];
 }
 
 @end
