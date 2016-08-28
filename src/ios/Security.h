@@ -23,4 +23,6 @@
 
 - (void)aesEncrypt:(CDVInvokedUrlCommand*)command;
 - (void)aesDecrypt:(CDVInvokedUrlCommand*)command;
+- (void)encrypt:(CDVInvokedUrlCommand*)command;
+- (void)decrypt:(CDVInvokedUrlCommand*)command;
 @end
